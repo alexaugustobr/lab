@@ -20,9 +20,12 @@ package util.mina.udp.memoryserver.client;
  *
  */
 import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 
 import org.apache.mina.core.buffer.IoBuffer;
+import org.apache.mina.core.buffer.IoBufferAllocator;
+import org.apache.mina.core.buffer.SimpleBufferAllocator;
 import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.future.IoFutureListener;
 import org.apache.mina.core.service.IoConnector;
@@ -53,14 +56,19 @@ public class JediAcademy extends IoHandlerAdapter {
 
 		LOGGER.debug("UDPClient::UDPClient");
 		LOGGER.debug("Created a datagram connector");
+		
 		connector = new NioDatagramConnector();
+		
 		LOGGER.debug("Setting the handler");
+		
 		connector.setHandler(this);
 		// connector.getFilterChain().addLast("codec", new
 		// ProtocolCodecFilter(new
 		// TextLineCodecFactory(Charset.forName("UTF-8"))));
 		LOGGER.debug("About to connect to the server...");
-		ConnectFuture connFuture = connector.connect(new InetSocketAddress("localhost", 29071));
+		
+		
+		ConnectFuture connFuture = connector.connect(new InetSocketAddress("179.113.253.219", 29071));
 
 		LOGGER.debug("About to wait.");
 		connFuture.awaitUninterruptibly();
@@ -86,7 +94,7 @@ public class JediAcademy extends IoHandlerAdapter {
 	
 
 	private void sendData() throws InterruptedException {
-		String theString = "rcon rconbobomg devmap legosw\n";
+		String theString = "rcon rconbobomg devmap mb2_cmp_arena\n";
 
 		byte[] stringBytes = theString.getBytes();
 
@@ -103,17 +111,20 @@ public class JediAcademy extends IoHandlerAdapter {
 		for (int iByte = 0; iByte < allBytes.length; iByte++)
 			System.out.print((char) allBytes[iByte]);
 
-		IoBuffer buffer = IoBuffer.allocate(ba.length);
-		buffer.put(ba);
+		IoBuffer buffer = IoBuffer.allocate(allBytes.length);
+		buffer.put(allBytes);
 		buffer.flip();
 
 		session.write(buffer);
+		
+		
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			throw new InterruptedException(e.getMessage());
 		}
+		
 	}
 
 	@Override
@@ -123,13 +134,23 @@ public class JediAcademy extends IoHandlerAdapter {
 
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
-		System.out.println("Received message: "+message);
-		LOGGER.debug("Session recv...");
+		
+		IoBuffer buffer = (IoBuffer) message;
+		System.out.println(new String(buffer.array()));
+		SimpleBufferAllocator allocator = (SimpleBufferAllocator) buffer.getAllocator();
+		
+		
+//		String message1= (String)message;
+//		IoBuffer buf = IoBuffer.allocate(message1.length()).setAutoExpand(true);
+//		buf.putString(message1, Charset.forName("UTF-8").newEncoder());
+//		LOGGER.debug("Session recv...");
 	}
 
 	@Override
 	public void messageSent(IoSession session, Object message) throws Exception {
-		System.out.println("Send message: " + message.toString());
+		IoBuffer buffer = (IoBuffer) message;
+		System.out.println(new String(buffer.array()));
+		SimpleBufferAllocator allocator = (SimpleBufferAllocator) buffer.getAllocator();
 		LOGGER.debug("Message sent...");
 	}
 
