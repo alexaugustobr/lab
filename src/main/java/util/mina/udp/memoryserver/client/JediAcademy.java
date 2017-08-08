@@ -22,6 +22,7 @@ package util.mina.udp.memoryserver.client;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.util.Arrays;
 
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.buffer.IoBufferAllocator;
@@ -35,6 +36,7 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.nio.NioDatagramConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 /**
  * Sends its memory usage to the MemoryMonitor server.
@@ -94,7 +96,7 @@ public class JediAcademy extends IoHandlerAdapter {
 	
 
 	private void sendData() throws InterruptedException {
-		String theString = "rcon rconbobomg devmap mb2_cmp_arena\n";
+		String theString = "rcon rconbobomg devmap legosw\n";
 
 		byte[] stringBytes = theString.getBytes();
 
@@ -107,6 +109,8 @@ public class JediAcademy extends IoHandlerAdapter {
 		byte[] ba = (theString).getBytes();
 
 		System.arraycopy(ba, 0, allBytes, 4, stringBytes.length);
+		
+		
 
 		for (int iByte = 0; iByte < allBytes.length; iByte++)
 			System.out.print((char) allBytes[iByte]);
@@ -134,9 +138,27 @@ public class JediAcademy extends IoHandlerAdapter {
 
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
-		
+		System.out.println("messageReceived");
 		IoBuffer buffer = (IoBuffer) message;
-		System.out.println(new String(buffer.array()));
+		
+		String string = new String(buffer.array());
+		String[] strings = StringUtils.split(string, "InitGame");
+		
+		if (strings != null) {
+			
+			for (String string2 : strings) {
+				if (string2 != null) {
+					if (!StringUtils.startsWithIgnoreCase(string2, "/") && !string2.contains("print") && !StringUtils.startsWithIgnoreCase(string2, "./")) {
+						if (StringUtils.startsWithIgnoreCase(string2, ":")) {
+							System.out.println("InitGame"+string2);
+						}
+					}
+					
+				}
+				
+			}
+		}
+		
 		SimpleBufferAllocator allocator = (SimpleBufferAllocator) buffer.getAllocator();
 		
 		
@@ -148,6 +170,7 @@ public class JediAcademy extends IoHandlerAdapter {
 
 	@Override
 	public void messageSent(IoSession session, Object message) throws Exception {
+		System.out.println("messageSent");
 		IoBuffer buffer = (IoBuffer) message;
 		System.out.println(new String(buffer.array()));
 		SimpleBufferAllocator allocator = (SimpleBufferAllocator) buffer.getAllocator();
